@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_w10_d31_camera/features/main_navigation/main_navigation_screen.dart';
 import 'package:flutter_w10_d31_camera/router.dart';
 import 'package:go_router/go_router.dart';
 
