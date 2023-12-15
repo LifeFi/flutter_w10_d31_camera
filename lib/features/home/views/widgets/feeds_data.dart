@@ -51,6 +51,7 @@ class FeedsData extends ChangeNotifier {
     required String name,
     required String avatar,
     required String content,
+    List<dynamic>? images,
   }) {
     data.add({
       "user": {
@@ -60,7 +61,7 @@ class FeedsData extends ChangeNotifier {
         "isMe": true,
       },
       "content": content,
-      "images": [],
+      "images": images ?? [],
       "createdAt": DateTime.now(),
       "comments": [],
       "likes": 0,

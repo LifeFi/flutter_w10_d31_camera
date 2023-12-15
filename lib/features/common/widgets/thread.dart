@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_w10_d31_camera/constants/gaps.dart';
 import 'package:flutter_w10_d31_camera/constants/sizes.dart';
@@ -11,7 +13,7 @@ class Thread extends StatelessWidget {
   final bool isMe;
   final DateTime createdAt;
   final String content;
-  final List<String> images;
+  final List<dynamic> images;
   final List<dynamic> comments;
   final int likes;
 
@@ -180,10 +182,15 @@ class Thread extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: Image.network(
-                                      image,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: image[0] == "/"
+                                        ? Image.file(
+                                            File(image),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.network(
+                                            image,
+                                            fit: BoxFit.cover,
+                                          ),
                                   ),
                                 Gaps.h96,
                               ],

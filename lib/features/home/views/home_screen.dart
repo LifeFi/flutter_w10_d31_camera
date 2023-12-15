@@ -52,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
           slivers: [
             SliverAppBar(
               backgroundColor: Colors.white,
+              centerTitle: true,
               title: Image.asset(
                 "assets/images/threads_logo.png",
                 height: Sizes.size32,

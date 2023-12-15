@@ -53,7 +53,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Future<bool> _showPostModal() async {
     final bool isPosted;
-    print("showPostModal");
     isPosted = await showModalBottomSheet(
           isScrollControlled: true,
           elevation: 0,

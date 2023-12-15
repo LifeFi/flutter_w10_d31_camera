@@ -1,8 +1,12 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_w10_d31_camera/constants/gaps.dart';
 import 'package:flutter_w10_d31_camera/constants/sizes.dart';
 import 'package:flutter_w10_d31_camera/features/home/views/widgets/feeds_data.dart';
+import 'package:flutter_w10_d31_camera/features/post/view/camera_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 final Map<String, dynamic> user = {
@@ -28,6 +32,7 @@ class PostScreen extends StatefulWidget {
 
 class _PostScreenState extends State<PostScreen> {
   final TextEditingController _controller = TextEditingController();
+  final List<dynamic> _photos = [];
 
   _onScaffoldTap() {
     FocusScope.of(context).unfocus();
@@ -37,12 +42,27 @@ class _PostScreenState extends State<PostScreen> {
     Navigator.of(context).pop(false);
   }
 
+  _onPhotoTap() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CameraScreen(),
+      ),
+    );
+    if (result == null) return;
+    _photos.addAll([...result]);
+    debugPrint(result.toString());
+    if (_photos.isNotEmpty) print(_photos[0].path);
+    setState(() {});
+  }
+
   _onPostTap() {
     feedsData.post(
       id: user["id"],
       name: user["name"],
       avatar: user["avatar"],
       content: _controller.text,
+      images:
+          _photos.isNotEmpty ? _photos.map((item) => item.path).toList() : [],
     );
 
     Navigator.of(context).pop(true);
@@ -68,6 +88,16 @@ class _PostScreenState extends State<PostScreen> {
     return _controller.value.text.isNotEmpty;
   }
 
+  _onDeleteTap(int index) {
+    _photos.removeAt(index);
+    setState(() {});
+  }
+
+  _onDeleteAllTap() {
+    _photos.clear();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -77,6 +107,7 @@ class _PostScreenState extends State<PostScreen> {
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
             leadingWidth: 100,
             leading: GestureDetector(
                 onTap: _onCancelTap,
@@ -105,7 +136,7 @@ class _PostScreenState extends State<PostScreen> {
             ),
             child: Stack(
               children: [
-                Column(
+                ListView(
                   children: [
                     const Divider(
                       thickness: 0.5,
@@ -160,67 +191,166 @@ class _PostScreenState extends State<PostScreen> {
                           ),
                           Gaps.h10,
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Stack(
                               children: [
-                                Text(
-                                  user["name"],
-                                  style: const TextStyle(
-                                    fontSize: Sizes.size16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                TextField(
-                                  controller: _controller,
-                                  autofocus: true,
-                                  maxLines: null,
-                                  decoration: const InputDecoration(
-                                    isDense: true,
-                                    hintText: "Start a thread...",
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user["name"],
+                                      style: const TextStyle(
+                                        fontSize: Sizes.size16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    border: InputBorder.none,
+                                    TextField(
+                                      controller: _controller,
+                                      autofocus: true,
+                                      maxLines: null,
+                                      decoration: const InputDecoration(
+                                        isDense: true,
+                                        hintText: "Start a thread...",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        border: InputBorder.none,
+                                      ),
+                                      cursorColor:
+                                          Theme.of(context).primaryColor,
+                                    ),
+                                    Gaps.v10,
+                                    if (_photos.isNotEmpty)
+                                      SizedBox(
+                                        height: 200,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: ListView(
+                                          scrollDirection: Axis.horizontal,
+                                          children: [
+                                            for (var index = 0;
+                                                index < _photos.length;
+                                                index++)
+                                              Stack(
+                                                children: [
+                                                  Container(
+                                                    width: 270,
+                                                    height: 200,
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                      top: 10,
+                                                      right: 10,
+                                                    ),
+                                                    clipBehavior: Clip.hardEdge,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
+                                                    child: Image.file(
+                                                      File(_photos[index].path),
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  ),
+                                                  Positioned(
+                                                    top: Sizes.size16,
+                                                    right: Sizes.size16,
+                                                    child: GestureDetector(
+                                                      onTap: () =>
+                                                          _onDeleteTap(index),
+                                                      child: Container(
+                                                        padding:
+                                                            EdgeInsets.zero,
+                                                        alignment:
+                                                            Alignment.center,
+                                                        width: Sizes.size24,
+                                                        height: Sizes.size24,
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          color: Colors.grey,
+                                                        ),
+                                                        child: const FaIcon(
+                                                          FontAwesomeIcons
+                                                              .xmark,
+                                                          color: Colors.white,
+                                                          size: Sizes.size14,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                          ],
+                                        ),
+                                      )
+                                    else
+                                      Container(),
+                                    Gaps.v10,
+                                    GestureDetector(
+                                      onTap: _onPhotoTap,
+                                      child: const FaIcon(
+                                        FontAwesomeIcons.paperclip,
+                                        size: Sizes.size24,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    Gaps.v40,
+                                  ],
+                                ),
+                                if (_photos.isNotEmpty)
+                                  Positioned(
+                                    right: Sizes.size6,
+                                    top: Sizes.size4,
+                                    child: GestureDetector(
+                                      onTap: () => _onDeleteAllTap(),
+                                      child: const FaIcon(
+                                        FontAwesomeIcons.xmark,
+                                        color: Colors.grey,
+                                        size: Sizes.size16,
+                                      ),
+                                    ),
                                   ),
-                                  cursorColor: Theme.of(context).primaryColor,
-                                ),
-                                Gaps.v10,
-                                const FaIcon(
-                                  FontAwesomeIcons.paperclip,
-                                  size: Sizes.size24,
-                                  color: Colors.grey,
-                                ),
-                                Gaps.v40,
                               ],
                             ),
                           ),
                         ],
                       ),
-                    )
+                    ),
+                    Gaps.v80,
                   ],
                 ),
                 Positioned(
-                  bottom: Sizes.size20,
-                  left: Sizes.size10,
-                  right: Sizes.size10,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Anyone can reply"),
-                      GestureDetector(
-                        onTap: _isEnablePost() ? _onPostTap : null,
-                        child: Text(
-                          "Post",
-                          style: TextStyle(
-                            color: _isEnablePost()
-                                ? Theme.of(context).primaryColor
-                                : Colors.grey,
-                            fontSize: Sizes.size18,
-                            fontWeight: FontWeight.bold,
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: Sizes.size20,
+                      horizontal: Sizes.size20,
+                    ),
+                    // height: 100,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text("Anyone can reply"),
+                        GestureDetector(
+                          onTap: _isEnablePost() ? _onPostTap : null,
+                          child: Text(
+                            "Post",
+                            style: TextStyle(
+                              color: _isEnablePost()
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.grey,
+                              fontSize: Sizes.size18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 )
               ],
